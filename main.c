@@ -28,6 +28,27 @@ typedef struct request {
 	char* reply;
 } request_t;
 
+char* escape_str(char* str) {
+	int to_escape = 0;
+	char* strp		= str;
+	while (*(strp++))
+		to_escape += (*strp == '"' || *strp == '\n' || *strp == '\r');
+	char* ret = malloc(strlen(str) + to_escape + 1);
+	bzero(ret, strlen(str) + to_escape + 1);
+	// sprintf(ret, "%s\n", str);
+	for (size_t i = 0; i < strlen(str); i++) {
+		bool isn						= str[i] == '\n';
+		bool isr						= str[i] == '\r';
+		bool isq						= str[i] == '"';
+		char escaped_chr[3] = "";
+		sprintf(escaped_chr, "%c%c", isn || isr || isq ? '\\' : str[i], isn ? 'n' : isr ? 'r'
+																																						: isq		? '"'
+																																										: '\0');
+		strcat(ret, escaped_chr);
+	}
+	return ret;
+}
+
 void print_req(request_t* req) {
 	if (!req) return;
 	printf("typedef struct request {\n");
@@ -37,20 +58,13 @@ void print_req(request_t* req) {
 	printf("  char* port = \"%s\";\n", req->port);
 	printf("  size_t content_len = %ld;\n", req->content_len);
 	printf("  char* boundary = \"%s\";\n", req->boundary);
-	printf("  char* content_type = \"%s\";\n", req->content_type);
-	printf("  char* content = \"%s\";\n", req->content);
-	printf("  char* body = \"");
-
-	for (size_t i = 0; i < strlen(req->body); i++) {
-		bool isn = req->body[i] == '\n';
-		bool isr = req->body[i] == '\r';
-		bool isq = req->body[i] == '"';
-		printf("%c%c", isn || isr || isq ? '\\' : req->body[i], isn ? 'n' : isr ? 'r'
-																																		: isq		? '"'
-																																						: '\0');
-	}
-	// printf("%s", req->body);
-	printf("\";\n");
+	printf("  char* content_type = \"%s\";\n\n", req->content_type);
+	char* escaped = escape_str(req->content);
+	printf("  char* content = \"%s\";\n\n", escaped);
+	free(escaped);
+	escaped = escape_str(req->body);
+	printf("  char* body = \"%s\";\n", escaped);
+	free(escaped);
 	printf("  char* reply = \"%s\";\n", req->reply);
 	printf("} request_t;\n");
 }
@@ -182,15 +196,14 @@ void https_req(request_t* req) {
 
 int main() {
 #define TELEGRAM_STR "https://api.telegram.org/bot" TOKEN
-	// char GET_UP_URL[]		= TELEGRAM_STR "/getUpdates";
-	// char POST_MSG_URL[] = TELEGRAM_STR "/sendMessage?chat_id=84961485&text=Test";
-	char DOC_MSG_URL[] = TELEGRAM_STR "/sendDocument";
+	// char GET_UP_URL[] = TELEGRAM_STR "/getUpdates";
+	char POST_MSG_URL[] = TELEGRAM_STR "/sendMessage?chat_id=84961485&text=Test";
+	// char DOC_MSG_URL[] = TELEGRAM_STR "/sendDocument";
 	// while (true) {
-	request_t* req_doc = gen_req(DOC_MSG_URL, "POST", "ciao");
-	https_req(req_doc);
-	print_req(req_doc);
-	free_req(req_doc);
+	request_t* req = gen_req(POST_MSG_URL, "GET", "ciao");
+	https_req(req);
+	print_req(req);
+	free_req(req);
 	// sleep(1);
 	// }
-	return 0;
 }
