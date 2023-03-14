@@ -5,8 +5,8 @@
 
 #include <string.h>
 
-#include "dhcpserver.h"
-#include "dnsserver.h"
+#include "external/dhcpserver.h"
+#include "external/dnsserver.h"
 #include "lwip/pbuf.h"
 #include "lwip/tcp.h"
 #include "pico/cyw43_arch.h"

@@ -53,3 +53,5 @@ dkms.conf
 
 main
 *.wasm
+build/
+generated/
