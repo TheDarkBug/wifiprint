@@ -1,0 +1,3 @@
+/home/adri/wifiprint/build/pioasm/CMakeFiles/pioasm.dir
+/home/adri/wifiprint/build/pioasm/CMakeFiles/edit_cache.dir
+/home/adri/wifiprint/build/pioasm/CMakeFiles/rebuild_cache.dir
